@@ -5,17 +5,19 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const path = require("path");
 
 module.exports = {
-  entry: path.resolve(__dirname, "../src/index.ts"),
+  entry: path.resolve(__dirname, "../src/index.js"),
   output: {
     path: path.resolve(__dirname, "../dist"),
     filename: "bundle.[contenthash].js",
     assetModuleFilename: "images/[hash][ext][query]",
   },
+  optimization: {
+    splitChunks: {
+      chunks: "all",
+    },
+  },
   devtool: "source-map",
   plugins: [
-    new CopyPlugin({
-      patterns: [{ from: path.resolve(__dirname, "../static") }],
-    }),
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, "../src/index.html"),
       minify: true,
@@ -27,7 +29,7 @@ module.exports = {
     rules: [
       // HTML
       {
-        test: /\.(html)$/i,
+        test: /\.(html)$/,
         use: ["html-loader"],
       },
 
@@ -48,6 +50,7 @@ module.exports = {
         loader: "ts-loader",
       },
 
+      // CSS
       {
         test: /\.css$/,
         use: [
@@ -71,6 +74,7 @@ module.exports = {
         ],
       },
 
+      // SCSS
       {
         test: /\.scss$/,
         use: [
@@ -97,20 +101,23 @@ module.exports = {
           },
         ],
       },
+
+      // Image
       {
         test: /\.(gif|png|jpe?g|svg)$/i,
         type: "asset",
       },
+
+      // Fonts
       {
         test: /\.(ttf|eot|woff|woff2)$/,
-        use: [
-          {
-            loader: "file-loader",
-            options: {
-              outputPath: "assets/fonts/",
-            },
-          },
-        ],
+        type: "asset/resource",
+      },
+
+      // GLTF files
+      {
+        test: /\.(gltf|glb)$/,
+        type: "asset/resource",
       },
     ],
   },

@@ -1,4 +1,5 @@
 import "./CSS/styles.scss";
+import Image from "./Assets/images/img.jpg";
 
 console.log("hello world");
 
