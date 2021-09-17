@@ -9,6 +9,7 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, "../dist"),
     filename: "bundle.[contenthash].js",
+    assetModuleFilename: "images/[hash][ext][query]",
   },
   devtool: "source-map",
   plugins: [
@@ -98,14 +99,7 @@ module.exports = {
       },
       {
         test: /\.(gif|png|jpe?g|svg)$/i,
-        use: [
-          {
-            loader: "file-loader",
-            options: {
-              outputPath: "assets/images/",
-            },
-          },
-        ],
+        type: "asset",
       },
       {
         test: /\.(ttf|eot|woff|woff2)$/,
