@@ -1,15 +1,18 @@
-*{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+@import "./Modules/homepage";
+@import "./Normalize/normalize";
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-body{
-    background-color: rgb(236, 166, 61);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: fit-content;
-    height: 100%;
-    background-color: red;
+body {
+  background-color: rgb(236, 166, 61);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  height: 100%;
+  background-color: red;
 }
