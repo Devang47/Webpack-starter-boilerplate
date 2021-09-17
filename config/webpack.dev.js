@@ -16,21 +16,11 @@ module.exports = merge(commonConfiguration, {
     },
     open: true,
     https: false,
-    host: "local-ip",
+    host: "0.0.0.0",
     allowedHosts: "all",
     hot: true,
-    onAfterSetupMiddleware: function (server) {
-      const port = server.options.port;
-      const https = server.options.https ? "s" : "";
-      const localIp = ip.v4.sync();
-      const domain1 = `http${https}://${localIp}:${port}`;
-      const domain2 = `http${https}://localhost:${port}`;
+    onAfterSetupMiddleware: function (devServer) {
 
-      console.log(
-        `Project running at:\n  - ${infoColor(domain1)}\n  - ${infoColor(
-          domain2
-        )}`
-      );
     },
   },
 });

@@ -49,12 +49,52 @@ module.exports = {
 
       {
         test: /\.css$/,
-        use: [MiniCssExtractPlugin.loader, "css-loader"],
+        use: [
+          MiniCssExtractPlugin.loader,
+          "css-loader",
+          {
+            loader: "postcss-loader",
+            options: {
+              postcssOptions: {
+                plugins: [
+                  [
+                    "postcss-preset-env",
+                    {
+                      // Options
+                    },
+                  ],
+                ],
+              },
+            },
+          },
+        ],
       },
 
       {
         test: /\.scss$/,
-        use: ["style-loader", "css-loader", "sass-loader"],
+        use: [
+          { loader: "style-loader" },
+          {
+            loader: "css-loader",
+            options: {
+              sourceMap: true,
+              modules: true,
+            },
+          },
+          {
+            loader: "postcss-loader",
+            options: {
+              sourceMap: true,
+              postcssOptions: {
+                plugins: [require.resolve("autoprefixer")],
+              },
+            },
+          },
+          {
+            loader: "sass-loader",
+            options: { sourceMap: true },
+          },
+        ],
       },
       {
         test: /\.(gif|png|jpe?g|svg)$/i,
@@ -78,24 +118,6 @@ module.exports = {
           },
         ],
       },
-    ],
-  },
-
-  resolve: {
-    extensions: [
-      ".tsx",
-      ".ts",
-      ".js",
-      ".scss",
-      ".gif",
-      ".png",
-      ".jpg",
-      ".jpeg",
-      ".svg",
-      ".ttf",
-      ".oet",
-      ".woff",
-      ".woff2",
     ],
   },
 };

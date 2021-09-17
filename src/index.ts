@@ -1,4 +1,4 @@
-import './CSS/styles.css'
+import "./CSS/styles.scss";
 
 console.log("hello world");
 

@@ -8,12 +8,13 @@
   "scripts": {
     "clean": "rm -r dist/*",
     "start": "webpack serve --mode development",
-    "dev": "webpack serve --config ./bundler/webpack.dev.js",
-    "build": "webpack --config ./bundler/webpack.prod.js"
+    "dev": "webpack serve --config ./config/webpack.dev.js",
+    "build": "webpack --config ./config/webpack.prod.js"
   },
   "devDependencies": {
     "@babel/core": "^7.15.5",
     "@babel/preset-env": "^7.15.6",
+    "autoprefixer": "^10.3.4",
     "babel-loader": "^8.2.2",
     "clean-webpack-plugin": "^4.0.0",
     "copy-webpack-plugin": "^9.0.1",
@@ -24,6 +25,9 @@
     "internal-ip": "^6.2.0",
     "mini-css-extract-plugin": "^2.3.0",
     "portfinder-sync": "^0.0.2",
+    "postcss": "^8.3.6",
+    "postcss-loader": "^6.1.1",
+    "postcss-preset-env": "^6.7.0",
     "raw-loader": "^4.0.2",
     "sass": "^1.41.1",
     "sass-loader": "^12.1.0",
@@ -35,5 +39,13 @@
     "webpack-cli": "^4.8.0",
     "webpack-dev-server": "^4.2.1",
     "webpack-merge": "^5.8.0"
-  }
+  },
+  "browserslist": [
+    "defaults",
+    "not ie < 11",
+    "last 2 versions",
+    "> 1%",
+    "iOS 7",
+    "last 3 iOS versions"
+  ]
 }

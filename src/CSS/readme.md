@@ -1,6 +1,5 @@
-# You can also import Scss file directly into `index.ts` but I'd recommend compiling it into css first.
+# You can also import CSS file directly into `index.ts` [PostCSS is enabled]
 
-## Why?
 Raw:
   ```css
 body{
@@ -14,7 +13,7 @@ body{
 }
 ```
 
-Compiled:
+After PostCSS:
 ```css
 body {
   background-color: #eca63d;
@@ -37,6 +36,4 @@ body {
   height: 100%;
 }
 ```
-
-Use `Live Sass Compiler` to compile
-> It compiles Scss to css and also adds prefix for supporting all browsers.
+> PostCSS is also enabled for Scss
