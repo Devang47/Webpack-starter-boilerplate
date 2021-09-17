@@ -3,14 +3,14 @@
   "version": "1.0.0",
   "description": "",
   "main": "src/index.ts",
+  "author": "Devang Saklani",
+  "license": "MIT",
   "scripts": {
     "clean": "rm -r dist/*",
     "start": "webpack serve --mode development",
     "dev": "webpack serve --config ./bundler/webpack.dev.js",
     "build": "webpack --config ./bundler/webpack.prod.js"
   },
-  "author": "",
-  "license": "ISC",
   "devDependencies": {
     "@babel/core": "^7.15.5",
     "@babel/preset-env": "^7.15.6",
