@@ -1,5 +1,4 @@
 import "./CSS/styles.scss";
-// import "regenerator-runtime/runtime.js";
 
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
