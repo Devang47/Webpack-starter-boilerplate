@@ -1,6 +1,5 @@
 {
     "asset" : {
-        "copyright" : "devang saklani",
         "generator" : "Khronos glTF Blender I/O v1.6.16",
         "version" : "2.0"
     },
@@ -16,7 +15,7 @@
             "extras" : {
                 "glTF2ExportSettings" : {
                     "export_apply" : 1,
-                    "export_copyright" : "devang saklani",
+                    "export_cameras" : 0,
                     "export_draco_mesh_compression_enable" : 1,
                     "export_extras" : 1,
                     "export_format" : "GLTF_SEPARATE",
@@ -175,17 +174,44 @@
         {
             "doubleSided" : true,
             "name" : "temir]",
-            "pbrMetallicRoughness" : {}
+            "pbrMetallicRoughness" : {
+                "baseColorFactor" : [
+                    0.42922258377075195,
+                    0.42922258377075195,
+                    0.42922258377075195,
+                    1
+                ],
+                "metallicFactor" : 1,
+                "roughnessFactor" : 0
+            }
         },
         {
             "doubleSided" : true,
             "name" : "Material.002",
-            "pbrMetallicRoughness" : {}
+            "pbrMetallicRoughness" : {
+                "baseColorFactor" : [
+                    0,
+                    0,
+                    0,
+                    1
+                ],
+                "metallicFactor" : 0.5769230723381042,
+                "roughnessFactor" : 1
+            }
         },
         {
             "doubleSided" : true,
             "name" : "nomer",
-            "pbrMetallicRoughness" : {}
+            "pbrMetallicRoughness" : {
+                "baseColorFactor" : [
+                    0.800000011920929,
+                    0.800000011920929,
+                    0.800000011920929,
+                    1
+                ],
+                "metallicFactor" : 1,
+                "roughnessFactor" : 0.20512819290161133
+            }
         },
         {
             "doubleSided" : true,
@@ -215,12 +241,30 @@
         {
             "doubleSided" : true,
             "name" : "Material.005",
-            "pbrMetallicRoughness" : {}
+            "pbrMetallicRoughness" : {
+                "baseColorFactor" : [
+                    0.800000011920929,
+                    0.800000011920929,
+                    0.800000011920929,
+                    1
+                ],
+                "metallicFactor" : 1,
+                "roughnessFactor" : 0
+            }
         },
         {
             "doubleSided" : true,
             "name" : "Material.003",
-            "pbrMetallicRoughness" : {}
+            "pbrMetallicRoughness" : {
+                "baseColorFactor" : [
+                    0,
+                    0,
+                    0,
+                    1
+                ],
+                "metallicFactor" : 0.7628204822540283,
+                "roughnessFactor" : 0.19871799647808075
+            }
         }
     ],
     "meshes" : [
