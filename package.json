@@ -45,5 +45,8 @@
     "> 1%",
     "iOS 7",
     "last 3 iOS versions"
-  ]
+  ],
+  "dependencies": {
+    "three": "^0.132.2"
+  }
 }

@@ -19,7 +19,7 @@ module.exports = {
   devtool: "source-map",
   plugins: [
     new CopyPlugin({
-      patterns: [{ from: "static" }],
+      patterns: [{ from: "static/*", noErrorOnMissing: true }],
     }),
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, "../src/index.html"),
