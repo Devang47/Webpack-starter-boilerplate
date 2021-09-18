@@ -5,7 +5,12 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
-import { EXRLoader } from "three/examples/jsm/loaders/EXRLoader";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
+import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
+
+import { RGBShiftShader } from "three/examples/jsm/shaders/RGBShiftShader.js";
+import { DotScreenShader } from "three/examples/jsm/shaders/DotScreenShader.js";
 
 import * as dat from "dat.gui";
 
@@ -16,28 +21,15 @@ function init() {
 
   const params = {
     exposure: 4.0,
-    fog: 0.05,
     light: {
       x: 2.82,
       y: 4,
       z: 2.9,
     },
-    ambientLight: 0.3,
+    ambientLight: 0.05,
   };
 
-  // scene.fog = new THREE.FogExp2(0xe8e6e6, params.fog);
-
   const gui = new dat.GUI();
-  gui.add(params, "exposure").min(0).max(10).step(0.01);
-
-  gui
-    .add(params, "fog")
-    .min(0)
-    .max(4)
-    .step(0.01)
-    .onChange(() => {
-      scene.fog = new THREE.FogExp2(0xe8e6e6, params.fog);
-    });
 
   const sizes = {
     width: innerWidth,
@@ -53,13 +45,7 @@ function init() {
   const gltfLoader = new GLTFLoader();
   gltfLoader.setDRACOLoader(dracoLoader);
 
-  // let envMap;
-  // const exrLoader = new EXRLoader();
-  // exrLoader.load("./env-map.exr", function (texture, textureData) {
-  //   texture.encoding = THREE.sRGBEncoding;
-  //   scene.background = texture;
-  //   scene.environment = texture;
-  // });
+  const cubeTextureLoader = new THREE.CubeTextureLoader();
 
   /**
    * Lights
@@ -76,66 +62,83 @@ function init() {
     });
 
   params.lightColor = 0xffffff;
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 3);
+  const directionalLight = new THREE.DirectionalLight(0xffdddd, 3);
   directionalLight.position.set(params.light.x, params.light.y, params.light.z);
 
   params.bias = 0.05;
   directionalLight.shadow.normalBias = params.bias;
-  const directionalLightHelper = new THREE.DirectionalLightHelper(
-    directionalLight,
-    1
-  );
-  scene.add(directionalLight, directionalLightHelper);
+  // const directionalLightHelper = new THREE.DirectionalLightHelper(
+  //   directionalLight,
+  //   1
+  // );
+  scene.add(directionalLight);
 
-  gui.add(params, "bias").min(0).max(1).step(0.01);
   gui.addColor(params, "lightColor").onChange(() => {
-    directionalLight.color = params.lightColor;
+    directionalLight.color = new THREE.Color(params.lightColor);
   });
-  gui
-    .add(params.light, "x")
-    .min(0)
-    .max(10)
-    .step(0.01)
-    .onChange(() => {
-      directionalLight.position.x = params.light.x;
-    });
-  gui
-    .add(params.light, "y")
-    .min(0)
-    .max(10)
-    .step(0.01)
-    .onChange(() => {
-      directionalLight.position.x = params.light.y;
-    });
-  gui
-    .add(params.light, "z")
-    .min(0)
-    .max(10)
-    .step(0.01)
-    .onChange(() => {
-      directionalLight.position.x = params.light.z;
-    });
+  // gui
+  //   .add(params.light, "x")
+  //   .min(0)
+  //   .max(10)
+  //   .step(0.01)
+  //   .onChange(() => {
+  //     directionalLight.position.x = params.light.x;
+  //   });
+  // gui
+  //   .add(params.light, "y")
+  //   .min(0)
+  //   .max(10)
+  //   .step(0.01)
+  //   .onChange(() => {
+  //     directionalLight.position.x = params.light.y;
+  //   });
+  // gui
+  //   .add(params.light, "z")
+  //   .min(0)
+  //   .max(10)
+  //   .step(0.01)
+  //   .onChange(() => {
+  //     directionalLight.position.x = params.light.z;
+  //   });
 
   /**
    * objects
    */
-  const planeMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });
-  planeMaterial.metalness = 0.2;
-  planeMaterial.roughness = 0.8;
+  params.planeColor = 0x000000;
+  const planeMaterial = new THREE.MeshStandardMaterial({
+    color: params.planeColor,
+  });
+  planeMaterial.metalness = 0.1;
+  planeMaterial.roughness = 1;
 
   const plane = new THREE.Mesh(
     new THREE.PlaneBufferGeometry(50, 50),
     planeMaterial
   );
   plane.rotation.x = Math.PI / 2;
-  plane.material.side = THREE.DoubleSide; // Render both sides
+  plane.material.side = THREE.DoubleSide;
   scene.add(plane);
+  gui.addColor(params, "planeColor").onChange(() => {
+    plane.material.color = new THREE.Color(params.planeColor);
+  });
+
+  gltfLoader.load("./Car/Challenger.gltf", (gltf) => {
+    gltf.scene.traverse((child) => {
+      child.castShadow = true;
+      child.receiveShadow = true;
+    });
+    gltf.scene.position.set(-2, 0, 0);
+    gltf.scene.rotation.y = Math.PI;
+    scene.add(gltf.scene);
+    gltf.scene.scale.set(1, 1, 1);
+  });
 
   gltfLoader.load("./Car/ford-mustang.gltf", (gltf) => {
     gltf.scene.traverse((child) => {
       child.castShadow = true;
       child.receiveShadow = true;
     });
+    gltf.scene.position.set(2, 0, 0);
     scene.add(gltf.scene);
     gltf.scene.scale.set(1, 1, 1);
   });
@@ -143,8 +146,6 @@ function init() {
   /**
    * Environment map
    */
-  const cubeTextureLoader = new THREE.CubeTextureLoader();
-
   const environmentMap = cubeTextureLoader.load([
     "/textures/environmentMaps/0/px.png",
     "/textures/environmentMaps/0/nx.png",
@@ -153,7 +154,7 @@ function init() {
     "/textures/environmentMaps/0/pz.png",
     "/textures/environmentMaps/0/nz.png",
   ]);
-  scene.background = environmentMap;
+  // scene.background = environmentMap;
   scene.environment = environmentMap;
   environmentMap.encoding = THREE.sRGBEncoding;
 
@@ -167,7 +168,7 @@ function init() {
     500
   );
   camera.position.set(3, 2, 8);
-  camera.lookAt({x: 0, y: 1, z: 0})
+  camera.lookAt(new THREE.Vector3(0, 2, 0));
 
   const updateAllMaterial = () => {
     scene.traverse((child) => {
@@ -175,7 +176,6 @@ function init() {
         child instanceof THREE.Mesh &&
         child.material instanceof THREE.MeshStandardMaterial
       ) {
-        //   child.material.envMap = environmentMap;
         child.material.envMapIntensity = params.exposure;
         child.material.needsUpdate = true;
       }
@@ -186,7 +186,6 @@ function init() {
    * Renderer
    */
   const canvas = document.querySelector("#webgl");
-
   const renderer = new THREE.WebGL1Renderer({
     canvas,
     antialias: true,
@@ -243,19 +242,34 @@ function init() {
 
   // Optimize shadows
   directionalLight.shadow.camera.near = 1;
-  directionalLight.shadow.camera.far = 9;
+  directionalLight.shadow.camera.far = 30;
+
+  /**
+   *  Postprocessing
+   */
+  let composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene, camera));
+
+  const effect1 = new ShaderPass(DotScreenShader);
+  effect1.uniforms["scale"].value = 4;
+  composer.addPass(effect1);
+
+  const effect2 = new ShaderPass(RGBShiftShader);
+  effect2.uniforms["amount"].value = 0.0014;
+  composer.addPass(effect2);
 
   /**
    * rendering frames
    */
   const clock = new THREE.Clock();
   function animate() {
-    const elapsedTime = clock.getElapsedTime();
+    const elapsedTime = clock.getElapsedTime() * 0.05;
 
     controls.update();
     // cameraHelper.update()
 
-    renderer.render(scene, camera);
+    composer.render();
+    // renderer.render(scene, camera);
     renderer.toneMappingExposure = params.exposure;
 
     requestAnimationFrame(animate);
