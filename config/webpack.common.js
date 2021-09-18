@@ -1,4 +1,5 @@
 const { merge } = require("webpack-merge");
+const CopyPlugin = require("copy-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const path = require("path");
@@ -17,13 +18,20 @@ module.exports = {
   },
   devtool: "source-map",
   plugins: [
+    new CopyPlugin({
+      patterns: [{ from: "static" }],
+    }),
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, "../src/index.html"),
       minify: true,
     }),
     new MiniCssExtractPlugin(),
   ],
-
+  performance: {
+    hints: false,
+    maxEntrypointSize: 512000,
+    maxAssetSize: 512000,
+  },
   module: {
     rules: [
       // HTML
