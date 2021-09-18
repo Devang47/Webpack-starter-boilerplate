@@ -2,7 +2,7 @@
   "name": "webpack-starter-boilerplate",
   "version": "1.0.0",
   "description": "",
-  "main": "src/index.ts",
+  "main": "src/index.js",
   "author": "Devang Saklani",
   "license": "MIT",
   "scripts": {
