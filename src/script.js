@@ -9,15 +9,21 @@ import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
 
-import { RGBShiftShader } from "three/examples/jsm/shaders/RGBShiftShader.js";
-import { DotScreenShader } from "three/examples/jsm/shaders/DotScreenShader.js";
+// import { RGBShiftShader } from "three/examples/jsm/shaders/RGBShiftShader.js";
+// import { DotScreenShader } from "three/examples/jsm/shaders/DotScreenShader.js";
+
+import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 
 import * as dat from "dat.gui";
 
 init();
 function init() {
+  const gui = new dat.GUI();
+
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color("#E8E6E6");
+  scene.background = new THREE.Color("#3d3d3d");
+
+  scene.fog = new THREE.Fog(0x3d3d3d, 15, 40);
 
   const params = {
     exposure: 4.0,
@@ -26,10 +32,13 @@ function init() {
       y: 4,
       z: 2.9,
     },
-    ambientLight: 0.05,
+    ambientLight: 0,
+    bgColor: "#ffffff",
   };
 
-  const gui = new dat.GUI();
+  gui.addColor(params, "bgColor").onChange(() => {
+    scene.background = new THREE.Color(params.bgColor);
+  });
 
   const sizes = {
     width: innerWidth,
@@ -57,12 +66,13 @@ function init() {
     .min(0)
     .max(1)
     .step(0.001)
+    .name('AmbientLight intensity')
     .onChange(() => {
       ambientLight.intensity = params.ambientLight;
     });
 
   params.lightColor = 0xffffff;
-  const directionalLight = new THREE.DirectionalLight(0xffdddd, 3);
+  const directionalLight = new THREE.DirectionalLight(params.lightColor, 3);
   directionalLight.position.set(params.light.x, params.light.y, params.light.z);
 
   params.bias = 0.05;
@@ -112,7 +122,7 @@ function init() {
   planeMaterial.roughness = 1;
 
   const plane = new THREE.Mesh(
-    new THREE.PlaneBufferGeometry(50, 50),
+    new THREE.PlaneBufferGeometry(80, 80),
     planeMaterial
   );
   plane.rotation.x = Math.PI / 2;
@@ -170,6 +180,9 @@ function init() {
   camera.position.set(3, 2, 8);
   camera.lookAt(new THREE.Vector3(0, 2, 0));
 
+  /**
+   * Material update
+   */
   const updateAllMaterial = () => {
     scene.traverse((child) => {
       if (
@@ -210,10 +223,10 @@ function init() {
     });
 
   /**
-   * Controls
+   * OrbitControls
    */
-  const controls = new OrbitControls(camera, canvas);
-  controls.enableDamping = true; // Smooth camera movement
+  // const controls = new OrbitControls(camera, canvas);
+  // controls.enableDamping = true; // Smooth camera movement
 
   /**
    * Update Canvas on Resize
@@ -247,16 +260,70 @@ function init() {
   /**
    *  Postprocessing
    */
+  const effects = {
+    exposure: 1.3,
+    bloomStrength: 0.4,
+    bloomThreshold: 0.36,
+    bloomRadius: 0.12,
+  };
   let composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
 
-  const effect1 = new ShaderPass(DotScreenShader);
-  effect1.uniforms["scale"].value = 4;
-  composer.addPass(effect1);
+  // const effect1 = new ShaderPass(DotScreenShader);
+  // effect1.uniforms["scale"].value = 4;
+  // composer.addPass(effect1);
 
-  const effect2 = new ShaderPass(RGBShiftShader);
-  effect2.uniforms["amount"].value = 0.0014;
-  composer.addPass(effect2);
+  // const effect2 = new ShaderPass(RGBShiftShader);
+  // effect2.uniforms["amount"].value = 0.0014;
+  // composer.addPass(effect2);
+
+  const bloomPass = new UnrealBloomPass(
+    new THREE.Vector2(window.innerWidth, window.innerHeight),
+    1.5,
+    0.4,
+    0.85
+  );
+  bloomPass.threshold = effects.bloomThreshold;
+  bloomPass.strength = effects.bloomStrength;
+  bloomPass.radius = effects.bloomRadius;
+
+  composer.addPass(bloomPass);
+  renderer.toneMappingExposure = Math.pow(effects.exposure, 4.0);
+
+  gui.add(effects, "exposure", 0.1, 2).onChange(function (value) {
+    renderer.toneMappingExposure = Math.pow(value, 4.0);
+  });
+
+  gui.add(effects, "bloomThreshold", 0.0, 1.0).onChange(function (value) {
+    bloomPass.threshold = Number(value);
+  });
+
+  gui.add(effects, "bloomStrength", 0.0, 3.0).onChange(function (value) {
+    bloomPass.strength = Number(value);
+  });
+
+  gui
+    .add(effects, "bloomRadius", 0.0, 1.0)
+    .step(0.01)
+    .onChange(function (value) {
+      bloomPass.radius = Number(value);
+    });
+
+  /**
+   * Mouse Controls
+   */
+  camera.position.y = 10;
+  camera.position.x = 0;
+  camera.position.z = 10;
+
+  const target = new THREE.Vector2();
+  const mouse = new THREE.Vector2();
+
+  addEventListener("mousemove", (event) => {
+    mouse.x = event.clientX / window.innerWidth - 0.5;
+    mouse.y = -(event.clientY / window.innerHeight - 0.5);
+  });
+
 
   /**
    * rendering frames
@@ -265,12 +332,17 @@ function init() {
   function animate() {
     const elapsedTime = clock.getElapsedTime() * 0.05;
 
-    controls.update();
-    // cameraHelper.update()
-
     composer.render();
-    // renderer.render(scene, camera);
-    renderer.toneMappingExposure = params.exposure;
+    // renderer.toneMappingExposure = params.exposure;
+
+    target.x = mouse.x * 26;
+    target.y = mouse.y * 13;
+
+    camera.position.x += 0.1 * (target.x - camera.position.x);
+    camera.position.y += 0.005 * (target.y - camera.position.y);
+    camera.lookAt(new THREE.Vector3(0, 1, 0));
+
+    console.log(camera.position);
 
     requestAnimationFrame(animate);
   }
