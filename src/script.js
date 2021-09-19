@@ -16,6 +16,18 @@ import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPa
 
 import * as dat from "dat.gui";
 
+const params = {
+  exposure: 4.0,
+  light: {
+    x: 2.82,
+    y: 4,
+    z: 2.9,
+  },
+  ambientLight: 0,
+  bgColor: "#ffffff",
+  fog: 0.01,
+};
+
 init();
 function init() {
   const gui = new dat.GUI();
@@ -23,22 +35,20 @@ function init() {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color("#3d3d3d");
 
-  scene.fog = new THREE.Fog(0x3d3d3d, 15, 40);
-
-  const params = {
-    exposure: 4.0,
-    light: {
-      x: 2.82,
-      y: 4,
-      z: 2.9,
-    },
-    ambientLight: 0,
-    bgColor: "#ffffff",
-  };
+  scene.fog = new THREE.FogExp2(0x3d3d3d, params.fog);
 
   gui.addColor(params, "bgColor").onChange(() => {
     scene.background = new THREE.Color(params.bgColor);
   });
+
+  gui
+    .add(params, "fog")
+    .min(0)
+    .max(5)
+    .step(0.01)
+    .onChange(() => {
+      scene.fog = new THREE.FogExp2(0x3d3d3d, params.fog);
+    });
 
   const sizes = {
     width: innerWidth,
@@ -66,7 +76,7 @@ function init() {
     .min(0)
     .max(1)
     .step(0.001)
-    .name('AmbientLight intensity')
+    .name("AmbientLight intensity")
     .onChange(() => {
       ambientLight.intensity = params.ambientLight;
     });
@@ -324,7 +334,6 @@ function init() {
     mouse.y = -(event.clientY / window.innerHeight - 0.5);
   });
 
-
   /**
    * rendering frames
    */
@@ -339,10 +348,13 @@ function init() {
     target.y = mouse.y * 13;
 
     camera.position.x += 0.1 * (target.x - camera.position.x);
-    camera.position.y += 0.005 * (target.y - camera.position.y);
-    camera.lookAt(new THREE.Vector3(0, 1, 0));
 
-    console.log(camera.position);
+    if (camera.position.y > 1) {
+      camera.position.y += 0.005 * (target.y - camera.position.y);
+    }else {
+      camera.position.y = 1.05
+    }
+    camera.lookAt(new THREE.Vector3(0, 1, 0));
 
     requestAnimationFrame(animate);
   }
