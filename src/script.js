@@ -9,8 +9,8 @@ import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
 
-// import { RGBShiftShader } from "three/examples/jsm/shaders/RGBShiftShader.js";
-// import { DotScreenShader } from "three/examples/jsm/shaders/DotScreenShader.js";
+import { RGBShiftShader } from "three/examples/jsm/shaders/RGBShiftShader.js";
+import { DotScreenShader } from "three/examples/jsm/shaders/DotScreenShader.js";
 
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 
@@ -23,9 +23,10 @@ const params = {
     y: 4,
     z: 2.9,
   },
-  ambientLight: 0,
-  bgColor: "#ffffff",
+  ambientLight: 0.001,
+  bgColor: "#000000",
   fog: 0.01,
+  postProcessing: "rgb + dot",
 };
 
 init();
@@ -33,22 +34,13 @@ function init() {
   const gui = new dat.GUI();
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color("#3d3d3d");
+  scene.background = new THREE.Color(params.bgColor);
 
-  scene.fog = new THREE.FogExp2(0x3d3d3d, params.fog);
+  scene.fog = new THREE.Fog("#000000", 4, 35);
 
   gui.addColor(params, "bgColor").onChange(() => {
     scene.background = new THREE.Color(params.bgColor);
   });
-
-  gui
-    .add(params, "fog")
-    .min(0)
-    .max(5)
-    .step(0.01)
-    .onChange(() => {
-      scene.fog = new THREE.FogExp2(0x3d3d3d, params.fog);
-    });
 
   const sizes = {
     width: innerWidth,
@@ -82,7 +74,7 @@ function init() {
     });
 
   params.lightColor = 0xffffff;
-  const directionalLight = new THREE.DirectionalLight(params.lightColor, 3);
+  const directionalLight = new THREE.DirectionalLight(params.lightColor, 1);
   directionalLight.position.set(params.light.x, params.light.y, params.light.z);
 
   params.bias = 0.05;
@@ -96,35 +88,38 @@ function init() {
   gui.addColor(params, "lightColor").onChange(() => {
     directionalLight.color = new THREE.Color(params.lightColor);
   });
-  // gui
-  //   .add(params.light, "x")
-  //   .min(0)
-  //   .max(10)
-  //   .step(0.01)
-  //   .onChange(() => {
-  //     directionalLight.position.x = params.light.x;
-  //   });
-  // gui
-  //   .add(params.light, "y")
-  //   .min(0)
-  //   .max(10)
-  //   .step(0.01)
-  //   .onChange(() => {
-  //     directionalLight.position.x = params.light.y;
-  //   });
-  // gui
-  //   .add(params.light, "z")
-  //   .min(0)
-  //   .max(10)
-  //   .step(0.01)
-  //   .onChange(() => {
-  //     directionalLight.position.x = params.light.z;
-  //   });
+  gui
+    .add(params.light, "x")
+    .min(0)
+    .max(10)
+    .step(0.01)
+    .name('light-x')
+    .onChange(() => {
+      directionalLight.position.x = params.light.x;
+    });
+  gui
+    .add(params.light, "y")
+    .min(0)
+    .max(10)
+    .step(0.01)
+    .name('light-y')
+    .onChange(() => {
+      directionalLight.position.x = params.light.y;
+    });
+  gui
+    .add(params.light, "z")
+    .min(0)
+    .max(10)
+    .step(0.01)
+    .name('light-z')
+    .onChange(() => {
+      directionalLight.position.x = params.light.z;
+    });
 
   /**
    * objects
    */
-  params.planeColor = 0x000000;
+  params.planeColor = 0x2b2727;
   const planeMaterial = new THREE.MeshStandardMaterial({
     color: params.planeColor,
   });
@@ -167,12 +162,12 @@ function init() {
    * Environment map
    */
   const environmentMap = cubeTextureLoader.load([
-    "/textures/environmentMaps/0/px.png",
-    "/textures/environmentMaps/0/nx.png",
-    "/textures/environmentMaps/0/py.png",
-    "/textures/environmentMaps/0/ny.png",
-    "/textures/environmentMaps/0/pz.png",
-    "/textures/environmentMaps/0/nz.png",
+    "/textures/environmentMaps/1/px.png",
+    "/textures/environmentMaps/1/nx.png",
+    "/textures/environmentMaps/1/py.png",
+    "/textures/environmentMaps/1/ny.png",
+    "/textures/environmentMaps/1/pz.png",
+    "/textures/environmentMaps/1/nz.png",
   ]);
   // scene.background = environmentMap;
   scene.environment = environmentMap;
@@ -182,10 +177,10 @@ function init() {
    * Camera
    */
   const camera = new THREE.PerspectiveCamera(
-    55,
+    45,
     sizes.width / sizes.height,
     0.1,
-    500
+    50
   );
   camera.position.set(3, 2, 8);
   camera.lookAt(new THREE.Vector3(0, 2, 0));
@@ -219,24 +214,29 @@ function init() {
   renderer.outputEncoding = THREE.sRGBEncoding;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
 
-  gui
-    .add(renderer, "toneMapping", {
-      No: THREE.NoToneMapping,
-      Linear: THREE.LinearToneMapping,
-      Reinhard: THREE.ReinhardToneMapping,
-      Cineon: THREE.CineonToneMapping,
-      ACESFilmic: THREE.ACESFilmicToneMapping,
-    })
-    .onFinishChange(() => {
-      renderer.toneMapping = Number(renderer.toneMapping);
-      updateAllMaterial();
-    });
+  // gui
+  //   .add(renderer, "toneMapping", {
+  //     No: THREE.NoToneMapping,
+  //     Linear: THREE.LinearToneMapping,
+  //     Reinhard: THREE.ReinhardToneMapping,
+  //     Cineon: THREE.CineonToneMapping,
+  //     ACESFilmic: THREE.ACESFilmicToneMapping,
+  //   })
+  //   .onFinishChange(() => {
+  //     renderer.toneMapping = Number(renderer.toneMapping);
+  //     updateAllMaterial();
+  //   });
 
   /**
    * OrbitControls
    */
-  // const controls = new OrbitControls(camera, canvas);
-  // controls.enableDamping = true; // Smooth camera movement
+  const controls = new OrbitControls(camera, canvas);
+  controls.autoRotate = true;
+  controls.enablePan = false;
+  controls.enableZoom = false;
+  controls.minPolarAngle = Math.PI / 2.8; // radians
+  controls.maxPolarAngle = Math.PI / 2.8; // radians
+  controls.enableDamping = true; // Smooth camera movement
 
   /**
    * Update Canvas on Resize
@@ -279,13 +279,11 @@ function init() {
   let composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
 
-  // const effect1 = new ShaderPass(DotScreenShader);
-  // effect1.uniforms["scale"].value = 4;
-  // composer.addPass(effect1);
+  const effect1 = new ShaderPass(DotScreenShader);
+  effect1.uniforms["scale"].value = 4;
 
-  // const effect2 = new ShaderPass(RGBShiftShader);
-  // effect2.uniforms["amount"].value = 0.0014;
-  // composer.addPass(effect2);
+  const effect2 = new ShaderPass(RGBShiftShader);
+  effect2.uniforms["amount"].value = 0.0014;
 
   const bloomPass = new UnrealBloomPass(
     new THREE.Vector2(window.innerWidth, window.innerHeight),
@@ -296,7 +294,6 @@ function init() {
   bloomPass.threshold = effects.bloomThreshold;
   bloomPass.strength = effects.bloomStrength;
   bloomPass.radius = effects.bloomRadius;
-
   composer.addPass(bloomPass);
   renderer.toneMappingExposure = Math.pow(effects.exposure, 4.0);
 
@@ -322,7 +319,7 @@ function init() {
   /**
    * Mouse Controls
    */
-  camera.position.y = 10;
+  camera.position.y = 6;
   camera.position.x = 0;
   camera.position.z = 10;
 
@@ -331,7 +328,6 @@ function init() {
 
   addEventListener("mousemove", (event) => {
     mouse.x = event.clientX / window.innerWidth - 0.5;
-    mouse.y = -(event.clientY / window.innerHeight - 0.5);
   });
 
   /**
@@ -344,18 +340,11 @@ function init() {
     composer.render();
     // renderer.toneMappingExposure = params.exposure;
 
-    target.x = mouse.x * 26;
-    target.y = mouse.y * 13;
+    // target.x = mouse.x * 26;
+    // camera.position.x += 0.1 * (target.x - camera.position.x);
 
-    camera.position.x += 0.1 * (target.x - camera.position.x);
-
-    if (camera.position.y > 1) {
-      camera.position.y += 0.005 * (target.y - camera.position.y);
-    }else {
-      camera.position.y = 1.05
-    }
-    camera.lookAt(new THREE.Vector3(0, 1, 0));
-
+    controls.update();
+    // camera.lookAt(new THREE.Vector3(0, 1, 0));
     requestAnimationFrame(animate);
   }
   animate();
